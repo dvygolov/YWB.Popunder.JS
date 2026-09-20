@@ -11,25 +11,25 @@
 If you like this script, PLEASE DONATE!
 ```
 
-[Поддержать проект](https://yellowweb.top/donate)
+[Support the project](https://yellowweb.top/donate)
 
 # YWB.Popunder.JS
 
-Popunder/clickunder для лендинга. Версия **2.0.0**. Без jQuery и других зависимостей, современный JavaScript.
+A popunder/clickunder for landing pages. Version **2.0.0**. No jQuery or other dependencies, modern JavaScript.
 
-По клику пользователя открывается маленькое окно и просто висит. Оно разворачивается и уходит на целевой URL только в двух случаях: пользователь кликнул по основной вкладке либо по самому маленькому окну. Так посетитель остаётся на сайте, а оффер открывается позади.
+On user click a small window opens and just sits there. It expands and goes to the target URL only in two cases: the user clicks the main tab, or clicks the small window itself. So the visitor stays on the site while the offer opens behind.
 
-## Подключение
+## Quick start
 
-Скопируйте `ywbpopunder.js` на свой сайт и подключите одним тегом:
+Copy `ywbpopunder.js` to your site and include it with a single tag:
 
 ```html
 <script src="ywbpopunder.js" data-url="https://offer.example/landing"></script>
 ```
 
-Всё. Первый настоящий клик пользователя откроет оффер в подкладке.
+That's it. The user's first real click opens the offer in a popunder.
 
-Вручную, с настройками:
+Manual setup with options:
 
 ```html
 <script src="ywbpopunder.js"></script>
@@ -42,77 +42,77 @@ Popunder/clickunder для лендинга. Версия **2.0.0**. Без jQue
 </script>
 ```
 
-Несколько кликандеров на одной странице — просто разные `id`:
+Multiple clickunders on one page — just use different `id`s:
 
 ```js
 Popunder.init({ id: 'main',  url: 'https://offer.example/a', whitelist: ['#content'] });
 Popunder.init({ id: 'video', url: 'https://offer.example/b', whitelist: ['video'] });
 ```
 
-## Настройки
+## Options
 
-| Параметр | По умолчанию | Назначение |
+| Option | Default | Description |
 | --- | --- | --- |
-| `url` | `''` | **Обязательно.** Куда ведём. |
-| `id` | `'popunder'` | Пространство имён cookie. Разный `id` — разные кликандеры на домене. |
-| `type` | `'classic'` | `classic` — подкладка за вкладкой; `redirect` — увести текущую вкладку на оффер, исходную ссылку открыть рядом. |
-| `limit` | `1` | Сколько раз показать одному пользователю. `0` — без ограничения. |
-| `expirationMinutes` | `-1` | Срок cookie «показано», в минутах. `-1` — до ближайшего полудня/полуночи. |
-| `cooldownMinutes` | `10` | Пауза после показа, в минутах. `0` — без паузы. |
-| `clicksToStart` | `0` | Сколько кликов выдержать до первого показа. `0`/`1` — на первом же клике. |
-| `startDelaySec` | `0` | Задержка до включения, в секундах. |
-| `whitelist` | `[]` | Селекторы кликабельных зон. Пусто — вся страница. |
-| `blacklist` | `['.no-pop']` | Селекторы, на которых кликандер молчит (вместе с родителями). |
-| `refererWhitelist` | `[]` | Показывать только с этих рефереров (точные домены, без `www.`). |
-| `refererBlacklist` | `[]` | Не показывать с этих рефереров. |
-| `userAgentBlacklist` | `[]` | Строки UA для блокировки. Поддерживает `a&&b` (все подстроки) и `a||b` (любая группа). |
-| `coverIframes` | `true` | Накрывать iframe прозрачными div'ами, чтобы клики по плеерам считались. |
-| `useCapture` | `false` | Слушать клики в фазе перехвата. |
-| `windowFeatures` | *см. код* | Параметры окна подкладки. Открывается 1×1 и висит до действия пользователя. |
-| `debug` | `false` | Логи в консоль. |
-| `onOpen` | `null` | Колбэк после открытия: `(url) => {}`. |
+| `url` | `''` | **Required.** Where to send the user. |
+| `id` | `'popunder'` | Cookie namespace. A different `id` means a different clickunder on the same domain. |
+| `type` | `'classic'` | `classic` — popunder behind the tab; `redirect` — send the current tab to the offer and open the original link nearby. |
+| `limit` | `1` | How many times to show the offer to one user. `0` — unlimited. |
+| `expirationMinutes` | `-1` | Lifetime of the "already shown" cookie, in minutes. `-1` — until the next noon/midnight. |
+| `cooldownMinutes` | `10` | Pause after a show, in minutes. `0` — no pause. |
+| `clicksToStart` | `0` | How many clicks to wait before the first show. `0`/`1` — on the very first click. |
+| `startDelaySec` | `0` | Delay before arming, in seconds. |
+| `whitelist` | `[]` | Clickable-zone selectors. Empty — the whole page. |
+| `blacklist` | `['.no-pop']` | Selectors where the clickunder stays silent (together with their parents). |
+| `refererWhitelist` | `[]` | Only show from these referrers (exact domains, no `www.`). |
+| `refererBlacklist` | `[]` | Never show from these referrers. |
+| `userAgentBlacklist` | `[]` | UA strings to block. Supports `a&&b` (all substrings) and `a||b` (any group). |
+| `coverIframes` | `true` | Cover iframes with transparent divs so clicks on players are counted. |
+| `useCapture` | `false` | Listen for clicks in the capture phase. |
+| `windowFeatures` | *see code* | Popunder window features. Opens 1×1 and sits there until the user acts. |
+| `debug` | `false` | Console logs. |
+| `onOpen` | `null` | Callback after opening: `(url) => {}`. |
 
-Те же значения можно задать через `data-*` у тега скрипта: `data-url`, `data-id`, `data-type`, `data-limit`, `data-expiration`, `data-cooldown`, `data-clicks`, `data-timer`, `data-whitelist` и `data-blacklist` (через запятую), `data-debug`.
+The same values can be set via `data-*` attributes on the script tag: `data-url`, `data-id`, `data-type`, `data-limit`, `data-expiration`, `data-cooldown`, `data-clicks`, `data-timer`, `data-whitelist` and `data-blacklist` (comma-separated), `data-debug`.
 
 ## API
 
 ```js
 const p = Popunder.init({ url: 'https://offer.example/landing' });
 
-p.arm();          // включить
-p.destroy();      // выключить и снять накладки
-p.reset();        // очистить cookie «показано»
-p.config;         // действующая конфигурация
+p.arm();          // arm the clickunder
+p.destroy();      // disarm and remove iframe covers
+p.reset();        // clear the "already shown" cookies
+p.config;         // effective configuration
 p.device;         // { os, browser }
 
-Popunder.reset(); // сбросить cookie у всех экземпляров
+Popunder.reset(); // clear cookies on every instance
 ```
 
-## Как это работает
+## How it works
 
-1. На первый настоящий клик синхронно открывается маленькое окно `about:blank` — так браузер не блокирует его как всплывающее.
-2. Дальше окно **просто висит** и ничего не делает. Оно разворачивается и уходит на целевой URL только если:
-   - пользователь кликнул **по основной вкладке** — подкладка уходит назад, разворачивается на весь экран и получает URL, а исходный клик проигрывается заново, чтобы сайт не потерял действие;
-   - пользователь кликнул **по самому маленькому окну** — оно разворачивается и переходит само.
-3. Факт показа фиксируется в cookie (`limit`, `expirationMinutes`, `cooldownMinutes`), чтобы не долбить одного пользователя.
-4. Для мобильных (`android`/`ios`) исходная ссылка открывается в новой вкладке, а текущая уводится на оффер.
+1. On the first real click a small `about:blank` window opens synchronously — that is how it slips past the popup blocker.
+2. After that the window **just sits there** and does nothing. It expands and goes to the target URL only when:
+   - the user clicks **the main tab** — the popunder goes back, expands to full screen and loads the URL, and the original click is replayed so the site does not lose the action;
+   - the user clicks **the small window itself** — it expands and navigates on its own.
+3. The show is recorded in cookies (`limit`, `expirationMinutes`, `cooldownMinutes`) so the same user is not hit over and over.
+4. On mobile (`android`/`ios`) the original link opens in a new tab and the current tab goes to the offer.
 
-## Проверка
+## Verifying
 
-Откройте `index.html` в браузере — в примере включён `data-debug`, движок пишет в консоль. Кнопка в зоне `.no-pop` должна игнорироваться.
+Open `index.html` in a browser — the demo has `data-debug` on, so the engine logs what it does. The button inside `.no-pop` must be ignored.
 
-Автотесты чистых функций:
+Unit checks for the pure helpers:
 
 ```bash
 npm test
 ```
 
-Popunder требует **настоящего клика** (`event.isTrusted`). Программные клики игнорируются — так и задумано. Адблоки и настройки «блокировать всплывающие окна» могут помешать; проверяйте на живом домене в нескольких браузерах.
+The popunder needs a **real click** (`event.isTrusted`). Synthetic clicks are ignored by design. Ad blockers and "block pop-ups" browser settings can get in the way; test on a live domain across several browsers.
 
-## Источник
+## Source
 
-Логика снята с рабочего кликандера на `rutor.info` (загрузчик `deltarockme.com/services/` → движок `miceonme.com/plane/weight.js`), переписана и очищена. Референсы из базы Codex: [gist](https://gist.github.com/dvygolov/ec23e81ad13ada2f41f2402c984527ca) · [gist](https://gist.github.com/dvygolov/e22f81a5f316f86c6973cca900e75d57) · [js-popunder](https://github.com/dvygolov/js-popunder).
+The logic was extracted from a working clickunder on `rutor.info` (loader `deltarockme.com/services/` → engine `miceonme.com/plane/weight.js`), then rewritten and cleaned up. Codex-database references: [gist](https://gist.github.com/dvygolov/ec23e81ad13ada2f41f2402c984527ca) · [gist](https://gist.github.com/dvygolov/e22f81a5f316f86c6973cca900e75d57) · [js-popunder](https://github.com/dvygolov/js-popunder).
 
-## Лицензия
+## License
 
-MIT. Используй ответственно и только там, где это уместно.
+MIT. Use responsibly and only where appropriate.

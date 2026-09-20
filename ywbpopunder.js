@@ -2,18 +2,18 @@
  * YWB.Popunder.JS — standalone popunder / clickunder for landing pages
  * https://yellowweb.top
  *
- * Открывает целевой URL в «подкладке» за текущей вкладкой по клику
- * пользователя. Маленькое окно висит и ничего не делает, пока пользователь
- * не кликнет по нему или по основной вкладке — тогда оно разворачивается
- * и уходит на оффер. Без зависимостей, современный JS.
+ * Opens the target URL in a popunder behind the current tab on user click.
+ * The small window just sits there until the user clicks either the main
+ * window or the small window itself — then it expands and goes to the offer.
+ * No dependencies, modern JS.
  *
- * Быстрый старт:
+ * Quick start:
  *   <script src="ywbpopunder.js" data-url="https://offer.example/landing"></script>
  *
- * Вручную:
+ * Manual:
  *   Popunder.init({ url: 'https://offer.example/landing', limit: 1 });
  *
- * Лицензия: MIT. Используй ответственно и только там, где это уместно.
+ * License: MIT. Use responsibly and only where appropriate.
  */
 (function (root, factory) {
   const api = factory();
@@ -24,80 +24,80 @@
   'use strict';
 
   const TAG = 'script';
-  const URL_ERROR = '[Popunder] Не задан url — кликандер не включён.';
+  const URL_ERROR = '[Popunder] No url provided — clickunder is disabled.';
 
   /* ------------------------------------------------------------------ */
-  /* Настройки                                                           */
+  /* Settings                                                            */
   /* ------------------------------------------------------------------ */
 
   const DEFAULTS = Object.freeze({
-    // Куда ведём. Обязательное поле.
+    // Where to send the user. Required.
     url: '',
 
-    // Пространство имён cookie. Разный id — разные кликандеры на домене.
+    // Cookie namespace. A different id means a different clickunder on the same domain.
     id: 'popunder',
 
-    // classic  — подкладка за текущей вкладкой (по умолчанию);
-    // redirect — увести текущую вкладку на оффер, исходную ссылку открыть рядом.
+    // classic  — popunder behind the current tab (default);
+    // redirect — send the current tab to the offer and open the original link nearby.
     type: 'classic',
 
-    // Сколько раз показать одному пользователю. 0 — без ограничения.
+    // How many times to show the offer to one user. 0 — unlimited.
     limit: 1,
 
-    // Срок жизни cookie «уже показано», в минутах.
-    // -1 — до ближайшего полудня/полуночи (дефолт рекламных сетей).
+    // Lifetime of the "already shown" cookie, in minutes.
+    // -1 — until the next noon/midnight (the ad-network default).
     expirationMinutes: -1,
 
-    // Пауза после показа, в минутах. 0 — без паузы.
+    // Pause after a show, in minutes. 0 — no pause.
     cooldownMinutes: 10,
 
-    // Сколько кликов выдержать до первого показа. 0 или 1 — на первом же.
+    // How many user clicks to wait before the first show. 0 or 1 — on the very first click.
     clicksToStart: 0,
 
-    // Задержка до включения, в секундах.
+    // Delay before arming the clickunder, in seconds.
     startDelaySec: 0,
 
-    // Селекторы кликабельных зон. Пусто — вся страница.
+    // Clickable-zone selectors. Empty — the whole page.
     whitelist: [],
 
-    // Селекторы, на которых кликандер молчит (вместе с родителями).
+    // Selectors where the clickunder stays silent (together with their parents).
     blacklist: ['.no-pop'],
 
-    // Показывать только с этих рефереров / не показывать с этих (точные домены).
+    // Only show from these referrers / never show from these (exact domains).
     refererWhitelist: [],
     refererBlacklist: [],
 
-    // Не показывать, если UA содержит эти куски.
-    // Поддерживает "a&&b" (все подстроки) и "a||b" (любая из групп).
+    // Skip if the UA contains any of these chunks.
+    // Supports "a&&b" (all substrings) and "a||b" (any group).
     userAgentBlacklist: [],
 
-    // Накрывать iframe прозрачными div'ами, чтобы клики по плеерам считались.
+    // Cover iframes with transparent divs so clicks on players are counted.
     coverIframes: true,
 
-    // Слушать клики в фазе перехвата.
+    // Listen for clicks in the capture phase.
     useCapture: false,
 
-    // Окно подкладки: открывается маленьким (1×1) и висит, пока пользователь
-    // не кликнет по нему или по основной вкладке.
+    // Popunder window: opens tiny (1×1) and sits there until the user clicks
+    // either the small window or the main tab.
     windowFeatures:
       'directories=0,toolbar=0,scrollbars=1,location=0,statusbar=0,menubar=0,' +
       'resizable=1,width=1,height=1',
 
-    // Логи в консоль.
+    // Console logs.
     debug: false,
 
-    // Колбэк после открытия: (url) => {}
+    // Callback after opening: (url) => {}
     onOpen: null,
   });
 
   /* ------------------------------------------------------------------ */
-  /* Мелкие утилиты                                                      */
+  /* Small helpers                                                       */
   /* ------------------------------------------------------------------ */
 
   const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-  // Строка "; expires=..." для cookie. minutes < 0 — до полудня/полуночи,
-  // 0 — сессионная (без expires), > 0 — через N минут.
+  // The "; expires=..." part of a cookie. minutes < 0 — until noon/midnight,
+  // 0 — session cookie (no expires), > 0 — in N minutes.
   const cookieExpiry = (minutes) => {
     if (minutes < 0) {
       const d = new Date();
@@ -121,7 +121,7 @@
     },
   };
 
-  // true, если UA попадает под хоть одно правило блокировки.
+  // true if the UA matches at least one blocking rule.
   const matchUserAgent = (ua, blacklist) =>
     blacklist.some((expr) =>
       String(expr)
@@ -166,7 +166,7 @@
     return { os, browser };
   };
 
-  // Элемент (или его родитель) подпадает под один из селекторов?
+  // Does the element (or one of its ancestors) match any of the selectors?
   const isBlacklisted = (el, selectors) => {
     if (!selectors.length || !el?.closest) return false;
     try {
@@ -179,7 +179,7 @@
   const anchorHref = (target) => target?.closest?.('a')?.href || location.href;
 
   /* ------------------------------------------------------------------ */
-  /* Прозрачные накладки над iframe                                      */
+  /* Transparent covers over iframes                                     */
   /* ------------------------------------------------------------------ */
 
   class IframeCover {
@@ -240,7 +240,7 @@
         }
       }
 
-      if (this.divs.length) this.logger(`накрыто iframe: ${this.divs.length}`);
+      if (this.divs.length) this.logger(`iframes covered: ${this.divs.length}`);
     }
 
     start() {
@@ -255,7 +255,7 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* Способы открытия                                                    */
+  /* Open strategies                                                     */
   /* ------------------------------------------------------------------ */
 
   const simulateClick = (x, y) => {
@@ -279,11 +279,11 @@
       '</body></html>',
     ].join('\n');
 
-  // Классический popunder: маленькое окно за вкладкой.
+  // Classic popunder: a tiny window behind the tab.
   const openBehind = (url, config, event, logger) => {
     const win = window.open('about:blank', `popunder_${Math.floor(Math.random() * 1e6)}`, config.windowFeatures);
     if (!win) {
-      logger('окно заблокировано браузером');
+      logger('popup blocked by the browser');
       return false;
     }
 
@@ -291,7 +291,7 @@
     const expand = () => {
       if (expanded) return;
       expanded = true;
-      // Если окно уже развернул сам пользователь — не трогаем.
+      // If the user already expanded the window themselves, leave it alone.
       try {
         if (win.__popunderExpanded) return;
       } catch {}
@@ -302,9 +302,8 @@
       } catch {}
     };
 
-    // Триггер 1: клик по основной вкладке — подкладка уходит назад и
-    // разворачивается, а исходный клик проигрывается заново, чтобы сайт
-    // не потерял действие.
+    // Trigger 1: click on the main tab — the popunder goes back and expands,
+    // and the original click is replayed so the site does not lose the action.
     window.addEventListener(
       'focus',
       () => {
@@ -314,7 +313,7 @@
       { once: true },
     );
 
-    // Триггер 2: клик по самому маленькому окну — оно разворачивается само.
+    // Trigger 2: click on the small window itself — it expands on its own.
     try {
       win.document.write(childPage(url));
     } catch {}
@@ -322,7 +321,7 @@
     return true;
   };
 
-  // Увести текущую вкладку на оффер, исходную ссылку открыть рядом.
+  // Send the current tab to the offer and open the original link nearby.
   const openRedirect = (url, event) => {
     const tab = window.open(anchorHref(event?.target), '_blank');
     if (tab) tab.focus();
@@ -330,7 +329,7 @@
     return true;
   };
 
-  // Мобильные: исходная ссылка — в новой вкладке, текущая — на оффер.
+  // Mobile: the original link goes to a new tab, the current tab goes to the offer.
   const openMobile = (url, event) => {
     event?.preventDefault?.();
 
@@ -347,7 +346,7 @@
   };
 
   /* ------------------------------------------------------------------ */
-  /* Ядро                                                                */
+  /* Core                                                                */
   /* ------------------------------------------------------------------ */
 
   class Clickunder {
@@ -373,7 +372,7 @@
       if (!this.config.url) {
         console.warn(URL_ERROR);
       } else if (Cookie.get(this.keys.done)) {
-        this.logger('уже показано (cookie) — выключен');
+        this.logger('already shown (cookie) — disabled');
       } else if (this.config.startDelaySec > 0) {
         setTimeout(() => this.arm(), this.config.startDelaySec * 1000);
       } else {
@@ -420,7 +419,7 @@
         const count = Number.parseInt(Cookie.get(keys.clicks) || '0', 10) + 1;
         Cookie.set(keys.clicks, count, 10);
         if (count < config.clicksToStart) {
-          this.logger(`жду ещё кликов: ${count}/${config.clicksToStart}`);
+          this.logger(`waiting for more clicks: ${count}/${config.clicksToStart}`);
           return;
         }
       }
@@ -429,7 +428,7 @@
 
       const target = event.target;
       if (isBlacklisted(target, config.blacklist)) {
-        this.logger('клик по blacklist-элементу — пропуск');
+        this.logger('click on a blacklisted element — skipped');
         return;
       }
       if (config.whitelist.length && !target?.closest?.(config.whitelist.join(','))) return;
@@ -444,7 +443,7 @@
       if (!opened) return;
 
       this.markShown();
-      this.logger(`открыто: ${config.url}`);
+      this.logger(`opened: ${config.url}`);
       try {
         config.onOpen?.(config.url);
       } catch {}
@@ -460,7 +459,7 @@
       }
 
       document.addEventListener('click', this.onClick, this.config.useCapture);
-      this.logger(`включён (os=${this.device.os}, browser=${this.device.browser})`);
+      this.logger(`armed (os=${this.device.os}, browser=${this.device.browser})`);
     }
 
     destroy() {
@@ -472,12 +471,12 @@
     reset() {
       Object.values(this.keys).forEach((key) => Cookie.del(key));
       this.clicked = false;
-      this.logger('cookie сброшены');
+      this.logger('cookies cleared');
     }
   }
 
   /* ------------------------------------------------------------------ */
-  /* Публичный API                                                       */
+  /* Public API                                                          */
   /* ------------------------------------------------------------------ */
 
   const instances = [];
@@ -496,11 +495,11 @@
       instances.forEach((instance) => instance.reset());
     },
 
-    // Для тестов и продвинутого использования.
+    // For tests and advanced use.
     utils: { cookieExpiry, matchUserAgent, detectDevice },
   };
 
-  /* Автоинициализация из data-атрибутов тега script. */
+  /* Auto-init from the script tag data attributes. */
   const readDataConfig = (script) => {
     const d = script?.dataset;
     if (!d) return null;

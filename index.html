@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>YWB.Popunder.JS — демо</title>
+<title>YWB.Popunder.JS — demo</title>
 <style>
   :root { color-scheme: light dark; }
   * { box-sizing: border-box; }
@@ -32,29 +32,31 @@
 </head>
 <body>
   <div class="card">
-    <h1>YWB.Popunder.JS — демо</h1>
+    <h1>YWB.Popunder.JS — demo</h1>
     <p>
-      Кликни по любой кнопке или ссылке. Откроется маленькое окно и будет
-      висеть. Оно развернётся и уйдёт на оффер только когда ты кликнешь
-      по основной вкладке или по самому этому окошку.
+      Click any button or link. A small window opens and just sits there.
+      It expands and goes to the offer only when you click either the main
+      tab or that small window itself.
     </p>
     <p>
-      Кнопка в зоне <code>.no-pop</code> игнорируется — на ней кликандер молчит.
+      The button inside <code>.no-pop</code> is ignored — the clickunder
+      stays silent there.
     </p>
 
     <div class="row">
-      <button class="primary" onclick="return false;">Обычная кнопка</button>
-      <span class="no-pop"><button>Зона .no-pop (не сработает)</button></span>
-      <a class="btn" href="https://example.com/demo-link">Просто ссылка</a>
+      <button class="primary" onclick="return false;">Regular button</button>
+      <span class="no-pop"><button>.no-pop zone (will not fire)</button></span>
+      <a class="btn" href="https://example.com/demo-link">Plain link</a>
     </div>
 
     <p class="hint">
-      Включён <code>data-debug</code> — движок пишет в консоль, что происходит.
-      Целевой URL задан в теге script ниже; замени на свой оффер.
+      <code>data-debug</code> is on — the engine logs what it does to the
+      console. The target URL is set in the script tag below; replace it
+      with your own offer.
     </p>
   </div>
 
-  <!-- Замени data-url на свой оффер. -->
+  <!-- Replace data-url with your own offer. -->
   <script src="ywbpopunder.js"
           data-url="https://example.com/"
           data-debug="true"></script>

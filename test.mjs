@@ -15,22 +15,22 @@ const check = (label, condition) => {
 
 const { matchUserAgent, cookieExpiry } = Popunder.utils;
 
-check('init экспортируется', typeof Popunder.init === 'function');
-check('defaults.limit = 1', Popunder.defaults.limit === 1);
+check('init is exported', typeof Popunder.init === 'function');
+check('defaults.limit is 1', Popunder.defaults.limit === 1);
 
-check('UA: android матчится', matchUserAgent('mozilla/5.0 (linux; android 10)', ['android']) === true);
-check('UA: windows не матчится', matchUserAgent('mozilla/5.0 (windows nt 10.0)', ['android']) === false);
-check('UA: a&&b — все подстроки', matchUserAgent('foo bar baz', ['foo&&baz']) === true);
-check('UA: a&&b — не хватает одной', matchUserAgent('foo qux', ['foo&&baz']) === false);
-check('UA: a||b — любая группа', matchUserAgent('x y', ['a||y']) === true);
-check('UA: пустой список', matchUserAgent('anything', []) === false);
+check('UA: android matches', matchUserAgent('mozilla/5.0 (linux; android 10)', ['android']) === true);
+check('UA: windows does not match', matchUserAgent('mozilla/5.0 (windows nt 10.0)', ['android']) === false);
+check('UA: a&&b — all substrings', matchUserAgent('foo bar baz', ['foo&&baz']) === true);
+check('UA: a&&b — one missing', matchUserAgent('foo qux', ['foo&&baz']) === false);
+check('UA: a||b — any group', matchUserAgent('x y', ['a||y']) === true);
+check('UA: empty list', matchUserAgent('anything', []) === false);
 
-check('expiry: -1 даёт expires', /expires=/.test(cookieExpiry(-1)));
-check('expiry: 0 — сессионная', cookieExpiry(0) === '');
-check('expiry: 30 минут даёт expires', /expires=/.test(cookieExpiry(30)));
+check('expiry: -1 produces expires', /expires=/.test(cookieExpiry(-1)));
+check('expiry: 0 is a session cookie', cookieExpiry(0) === '');
+check('expiry: 30 minutes produces expires', /expires=/.test(cookieExpiry(30)));
 
 if (failed) {
-  console.error(`\nПровалено проверок: ${failed}`);
+  console.error(`\nFailed checks: ${failed}`);
   process.exit(1);
 }
-console.log('\nВсе проверки пройдены.');
+console.log('\nAll checks passed.');
