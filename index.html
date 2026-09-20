@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YWB.Popunder.JS — демо</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 16px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #0f1115; color: #e8eaed;
+    display: flex; min-height: 100vh; align-items: center; justify-content: center;
+  }
+  .card {
+    max-width: 660px; margin: 24px; padding: 32px 36px;
+    background: #171a21; border: 1px solid #262b36; border-radius: 16px;
+  }
+  h1 { margin: 0 0 8px; font-size: 24px; }
+  p { color: #b4bac6; }
+  code { background: #22262f; padding: 2px 6px; border-radius: 6px; font-size: 14px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+  button, a.btn {
+    font: inherit; padding: 11px 18px; border-radius: 10px; cursor: pointer;
+    border: 1px solid #2f3646; background: #212734; color: #e8eaed;
+    text-decoration: none; display: inline-block;
+  }
+  button.primary { background: #2e6bff; border-color: #2e6bff; color: #fff; }
+  .hint { margin-top: 18px; font-size: 13px; color: #7d8697; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>YWB.Popunder.JS — демо</h1>
+    <p>
+      Кликни по любой кнопке или ссылке. Откроется маленькое окно и будет
+      висеть. Оно развернётся и уйдёт на оффер только когда ты кликнешь
+      по основной вкладке или по самому этому окошку.
+    </p>
+    <p>
+      Кнопка в зоне <code>.no-pop</code> игнорируется — на ней кликандер молчит.
+    </p>
+
+    <div class="row">
+      <button class="primary" onclick="return false;">Обычная кнопка</button>
+      <span class="no-pop"><button>Зона .no-pop (не сработает)</button></span>
+      <a class="btn" href="https://example.com/demo-link">Просто ссылка</a>
+    </div>
+
+    <p class="hint">
+      Включён <code>data-debug</code> — движок пишет в консоль, что происходит.
+      Целевой URL задан в теге script ниже; замени на свой оффер.
+    </p>
+  </div>
+
+  <!-- Замени data-url на свой оффер. -->
+  <script src="ywbpopunder.js"
+          data-url="https://example.com/"
+          data-debug="true"></script>
+</body>
+</html>

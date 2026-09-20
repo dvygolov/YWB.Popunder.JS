@@ -1,0 +1,21 @@
+{
+  "name": "ywb-popunder",
+  "version": "2.0.0",
+  "description": "Standalone popunder / clickunder script for landing pages",
+  "main": "ywbpopunder.js",
+  "files": [
+    "ywbpopunder.js"
+  ],
+  "scripts": {
+    "test": "node test.mjs"
+  },
+  "keywords": [
+    "popunder",
+    "clickunder",
+    "landing",
+    "yellowweb"
+  ],
+  "author": "Yellow Web <https://yellowweb.top>",
+  "license": "MIT",
+  "homepage": "https://yellowweb.top"
+}
