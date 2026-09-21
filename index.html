@@ -18,6 +18,7 @@
     background: #171a21; border: 1px solid #262b36; border-radius: 16px;
   }
   h1 { margin: 0 0 8px; font-size: 24px; }
+  #ver { font-size: 14px; color: #7d8697; }
   p { color: #b4bac6; }
   code { background: #22262f; padding: 2px 6px; border-radius: 6px; font-size: 14px; }
   .row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
@@ -32,7 +33,7 @@
 </head>
 <body>
   <div class="card">
-    <h1>YWB.Popunder.JS — demo</h1>
+    <h1>YWB.Popunder.JS — demo <span id="ver"></span></h1>
     <p>
       Click any button or link. A small window opens and just sits there.
       It expands and goes to the offer only when you click either the main
@@ -60,5 +61,6 @@
   <script src="ywbpopunder.js"
           data-url="https://example.com/"
           data-debug="true"></script>
+  <script>document.getElementById('ver').textContent = 'v' + Popunder.version;</script>
 </body>
 </html>
