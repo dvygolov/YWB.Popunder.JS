@@ -18,7 +18,6 @@
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
-  else if (typeof define === 'function' && define.amd) define(() => api);
   else root.Popunder = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, () => {
   'use strict';
@@ -133,37 +132,34 @@
         ),
     );
 
-  const detectDevice = () => {
-    const ua = (navigator.userAgent || '').toLowerCase();
+  // Args are injectable so the helper stays testable outside a browser.
+  const detectDevice = (
+    ua = navigator.userAgent || '',
+    platform = navigator.platform || '',
+    maxTouchPoints = navigator.maxTouchPoints || 0,
+  ) => {
+    ua = ua.toLowerCase();
     const os = /windows/.test(ua)
       ? 'windows'
-      : /macintosh|mac os x/.test(ua)
-        ? 'mac'
-        : /android/.test(ua)
-          ? 'android'
-          : /iphone|ipad|ipod/.test(ua)
-            ? 'ios'
+      : /android/.test(ua)
+        ? 'android'
+        : /iphone|ipad|ipod/.test(ua)
+          ? 'ios'
+          : /macintosh|mac os x/.test(ua)
+            ? maxTouchPoints > 1
+              ? 'ios' // iPadOS 13+ pretends to be a Mac
+              : 'mac'
             : /linux/.test(ua)
               ? 'linux'
               : /smart-tv|smarttv|\btv\b/.test(ua)
                 ? 'tv'
                 : 'unknown';
-    const browser = /msie|trident/.test(ua)
-      ? 'ie'
-      : /edg\//.test(ua)
-        ? 'edge'
-        : /yabrowser/.test(ua)
-          ? 'yandex'
-          : /opr\/|opios/.test(ua)
-            ? 'opera'
-            : /chrome|crios/.test(ua)
-              ? 'chrome'
-              : /firefox|fxios/.test(ua)
-                ? 'firefox'
-                : /safari/.test(ua)
-                  ? 'safari'
-                  : 'unknown';
-    return { os, browser };
+    return {
+      os,
+      mobile: os === 'android' || os === 'ios',
+      // In-app webviews (FB/IG/TikTok) kill window.open — stay silent there.
+      inApp: /fban|fbav|instagram|tiktok/.test(ua),
+    };
   };
 
   // Does the element (or one of its ancestors) match any of the selectors?
@@ -321,26 +317,13 @@
     return true;
   };
 
-  // Send the current tab to the offer and open the original link nearby.
-  const openRedirect = (url, event) => {
-    const tab = window.open(anchorHref(event?.target), '_blank');
-    if (tab) tab.focus();
-    window.location.href = url;
-    return true;
-  };
-
-  // Mobile: the original link goes to a new tab, the current tab goes to the offer.
-  const openMobile = (url, event) => {
+  // Tab swap: the original link opens in a new (foreground) tab, the current
+  // tab silently goes to the offer. Mobile browsers and `type: 'redirect'`.
+  const openSwap = (url, event) => {
     event?.preventDefault?.();
-
-    const link = document.createElement('a');
-    link.href = anchorHref(event?.target);
-    link.target = '_blank';
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.dispatchEvent(new MouseEvent('click', { view: window, bubbles: true, cancelable: true }));
-    link.remove();
-
+    const tab = window.open(anchorHref(event?.target), '_blank');
+    if (!tab) return false; // popup blocked — leave the user alone
+    tab.focus();
     window.location.href = url;
     return true;
   };
@@ -367,6 +350,7 @@
       this.clicked = false;
       this.cover = null;
       this.armed = false;
+      this.armTimer = null;
       this.onClick = (event) => this.handleClick(event);
 
       if (!this.config.url) {
@@ -374,7 +358,7 @@
       } else if (Cookie.get(this.keys.done)) {
         this.logger('already shown (cookie) — disabled');
       } else if (this.config.startDelaySec > 0) {
-        setTimeout(() => this.arm(), this.config.startDelaySec * 1000);
+        this.armTimer = setTimeout(() => this.arm(), this.config.startDelaySec * 1000);
       } else {
         this.arm();
       }
@@ -433,11 +417,9 @@
       }
       if (config.whitelist.length && !target?.closest?.(config.whitelist.join(','))) return;
 
-      const mobile = this.device.os === 'android' || this.device.os === 'ios';
-      const opened = mobile
-        ? openMobile(config.url, event)
-        : config.type === 'redirect'
-          ? openRedirect(config.url, event)
+      const opened =
+        this.device.mobile || config.type === 'redirect'
+          ? openSwap(config.url, event)
           : openBehind(config.url, config, event, this.logger);
 
       if (!opened) return;
@@ -451,6 +433,10 @@
 
     arm() {
       if (this.armed) return;
+      if (this.device.inApp) {
+        this.logger('in-app webview detected — disabled');
+        return;
+      }
       this.armed = true;
 
       if (this.config.coverIframes) {
@@ -459,10 +445,11 @@
       }
 
       document.addEventListener('click', this.onClick, this.config.useCapture);
-      this.logger(`armed (os=${this.device.os}, browser=${this.device.browser})`);
+      this.logger(`armed (os=${this.device.os}${this.device.mobile ? ', mobile' : ''})`);
     }
 
     destroy() {
+      clearTimeout(this.armTimer);
       document.removeEventListener('click', this.onClick, this.config.useCapture);
       this.cover?.destroy();
       this.armed = false;

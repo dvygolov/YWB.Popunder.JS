@@ -83,7 +83,7 @@ p.arm();          // arm the clickunder
 p.destroy();      // disarm and remove iframe covers
 p.reset();        // clear the "already shown" cookies
 p.config;         // effective configuration
-p.device;         // { os, browser }
+p.device;         // { os, mobile, inApp }
 
 Popunder.reset(); // clear cookies on every instance
 ```
@@ -95,7 +95,8 @@ Popunder.reset(); // clear cookies on every instance
    - the user clicks **the main tab** — the popunder goes back, expands to full screen and loads the URL, and the original click is replayed so the site does not lose the action;
    - the user clicks **the small window itself** — it expands and navigates on its own.
 3. The show is recorded in cookies (`limit`, `expirationMinutes`, `cooldownMinutes`) so the same user is not hit over and over.
-4. On mobile (`android`/`ios`) the original link opens in a new tab and the current tab goes to the offer.
+4. On mobile (including iPadOS, which pretends to be a Mac) the original link opens in a new foreground tab and the current tab silently goes to the offer — the mobile equivalent of a window behind. If the browser blocks the new tab, nothing happens at all.
+5. In-app webviews (Facebook, Instagram, TikTok) kill `window.open`, so the clickunder stays completely silent there instead of dumping the user onto the offer on a random tap.
 
 ## Verifying
 
